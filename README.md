@@ -1,65 +1,62 @@
-# Excel File Merger Tool
+# ERP 成本計算工具
 
-A simple desktop application that can import two Excel files and merge them into a new Excel file.
+一個專為 ERP 成本計算自動化設計的桌面應用程式，透過圖形化介面，讓使用者輕鬆匯入 Excel 檔案，並自動產生格式化、計算完成的成本分析報表。
 
-## Features
+## 主要功能
 
-- Graphical User Interface (GUI)
-- Supports .xlsx and .xls formats
-- Real-time progress display
-- Error handling and prompt messages
-- Multi-threaded processing to prevent interface freezing
+- 支援 Excel 檔案（.xlsx）匯入與自動驗證
+- 自動產生格式化、帶有公式與樣式的成本計算報表
+- 進度條與即時狀態提示
+- 輸出檔案自動命名為 `ERP成本計算.xlsx`，可自訂輸出資料夾
 
-## Installation Requirements
+## 安裝需求
 
-### 1. Install Python
-Ensure your system has Python 3.12 or later installed.
+1. **Python 版本**：建議 Python 3.8 以上
+2. **必要套件**：請於專案根目錄執行以下指令安裝依賴
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 2. Install Required Packages
-Run the following command in the project directory:
+## 使用說明
 
-```bash
-pip install -r requirements.txt
-```
+1. 執行主程式：
+   ```bash
+   python app/app.py
+   ```
+2. 操作步驟：
+   - 點選「瀏覽」選擇輸入 Excel 檔案（需包含特定工作表）
+   - 選擇輸出資料夾（預設為使用者下載資料夾）
+   - 點擊「執行」開始處理
+   - 處理完成後，會自動提示並開啟輸出檔案所在位置
 
-Or install manually:
+## 輸入檔案格式要求
 
-```bash
-pip install pandas openpyxl xlrd
-```
+- 輸入 Excel 檔案需包含以下工作表（名稱需一致）：
+  - 標準成本結構表
+  - 鐵板重量計算
+  - 鐵板材料費單價
+  - 鐵板米數計算
 
-## Usage
+## 技術架構
 
-### 1. Run the Program
-```bash
-python excel_merger.py
-```
+- **GUI 框架**：ttkbootstrap
+- **Excel 處理**：openpyxl
+- **檔案對話框/訊息提示**：tkinter.filedialog, tkinter.messagebox
 
-### 2. Operation Steps
-1. Click "Browse" button to select the first Excel file
-2. Click "Browse" button to select the second Excel file
-3. Click "Browse" button to select the output file path
-4. Click "Start Merge" button to begin processing
-5. Wait for processing to complete
+## 主要檔案說明
 
-## Notes
+- `app/app.py`：主視窗與操作流程
+- `app/main.py`：成本計算主邏輯
+- `app/excel.py`：Excel 內容處理與計算
+- `app/style.py`：Excel 樣式與格式化輔助
 
-- Current merge logic is simple vertical merge (combining data rows from two files)
-- Ensure both input files have the same column structure
-- Output files will overwrite existing files with the same name
+## 注意事項
 
-## Future Extensions
+- 若輸出檔案已存在，會提示是否覆蓋
+- 輸入檔案格式需正確，否則會顯示錯誤訊息
+- 僅支援 .xlsx 格式
 
-This basic framework can be easily extended to support:
-- More complex merge logic (such as merging based on specific columns)
-- Data validation and cleaning
-- Multi-file batch processing
-- Custom column mapping
-- Data transformation and calculations
+## 常見問題
 
-## Technical Architecture
-
-- **GUI Framework**: Tkinter (built-in Python)
-- **Excel Processing**: pandas + openpyxl
-- **Multi-threading**: threading
-- **File Dialogs**: tkinter.filedialog
+- 若遇到「缺少工作表」或「格式錯誤」請確認輸入檔案內容
+- 若無法啟動，請確認 Python 及相關套件已正確安裝
