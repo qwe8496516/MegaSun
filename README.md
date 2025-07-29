@@ -23,7 +23,14 @@
    ```bash
    python app/app.py
    ```
-2. 操作步驟：
+
+2. 打包成執行檔（可選）：
+   ```bash
+   pyinstaller --clean --onefile --noconsole --name "name" app/app.py
+   ```
+   打包完成後，執行檔會產生在 `dist` 資料夾中。
+
+3. 操作步驟：
    - 點選「瀏覽」選擇輸入 Excel 檔案（需包含特定工作表）
    - 選擇輸出資料夾（預設為使用者下載資料夾）
    - 點擊「執行」開始處理
