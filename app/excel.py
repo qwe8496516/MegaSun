@@ -261,8 +261,16 @@ def calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_
             cell1.number_format = '0.00'
             cell2.number_format = '0.00'
             continue
-
+        
         try:
+            # resolve the type 'str'
+            for idx in range(1, 4):
+                if isinstance(values[idx], str):
+                    if '.' in values[idx]:
+                        values[idx] = float(values[idx])
+                    else:
+                        values[idx] = int(values[idx])
+
             coefficient = float(find_value_by_match(weight_sheet, 2, values[0], 6))
             weight = values[1] * values[2] * values[3] * coefficient
             material = find_row_with_multiple_conditions(material_sheet, [(3, values[0]), (4, values[1])], [5])[0]
@@ -279,7 +287,9 @@ def calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_
         except Exception as e:
             for j in range(4):
                 output_sheet.cell(row=output_i, column=output_col + j, value="")
-            print(f"Row {i} error: {e}")
+            error_message = f"Row {i} error: {e}, values: {values}"
+            print(error_message)
+            raise Exception(error_message)
         
         cell1 = output_sheet.cell(row=output_i, column=output_col + 6, value=f'=P{output_i}+O{output_i}+N{output_i}+M{output_i}')
         cell2 = output_sheet.cell(row=output_i, column=output_col + 7, value=f'=Q{output_i}*J{output_i}')
