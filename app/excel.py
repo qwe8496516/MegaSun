@@ -319,10 +319,10 @@ def total_result(sheet, total_row):
     sheet.merge_cells(f'P{total_row + 5}:R{total_row + 5}')
     cell_1 = sheet[f'P{total_row + 4}']
     cell_2 = sheet[f'P{total_row + 5}']
-    cell_1.value = '合計'
+    cell_1.value = '總合計'
     cell_2.value = '含其它製程費用'
     style.set_style_in_range(sheet, f'P{total_row + 4}:R{total_row + 5}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))
-    cell1 = sheet.cell(row=total_row + 4, column=output_col + 2, value=f'=SUM(S4:S{total_row + 3})')
+    cell1 = sheet.cell(row=total_row + 4, column=output_col + 2, value=f'=ROUND(SUM(S4:S{total_row + 3}), 0)')
     cell2 = sheet.cell(row=total_row + 5, column=output_col + 2, value=f'=S{total_row + 4}*1.05*1.3')
     cell1.number_format = '0.00'
     cell2.number_format = '0.00'
