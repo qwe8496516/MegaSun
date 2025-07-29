@@ -21,7 +21,7 @@ class ExcelApp:
 
         self.input_path = tb.StringVar()
         self.output_dir = tb.StringVar(value=DOWNLOADS)
-        self.output_file = 'ERP成本計算.xlsx'
+        self.output_file = 'ERP成本計算結果.xlsx'
         self.status_text = tb.StringVar(value='')
 
         tb.Label(root, text='選擇輸入 Excel 檔案：').pack(pady=(18, 0), anchor='w', padx=30)

@@ -18,7 +18,7 @@ def write_excel_header(sheet):
         '查詢品號', '展開順序', '階次及子件料號', '本地品名', '自定義欄位一',
         '規格呎吋', '', '', '',
         '累計用量[含損耗]', '鐵板重量/片', '材料費/單價', '鐵板材料費/片',
-        '鐵板米數/片', '孔費/片', '折刀/片', '每片小計', '合計'
+        '鐵板米數/片', '孔費/片', '折刀/片', '採購單價', '每片小計', '合計'
     ]
     sub_titles = ['材質', '厚度', '長', '寬']
 
@@ -85,8 +85,10 @@ def set_basic_styles(sheet, total_row):
     style.set_style_in_range(sheet, f'F3:J{total_row + 3}')
     style.set_style_in_range(sheet, f'K3:N{total_row + 3}', fill=PatternFill(fill_type='solid', start_color='FFF2CC', end_color='FFF2CC'))
     style.set_style_in_range(sheet, f'O3:P{total_row + 3}', fill=PatternFill(fill_type='solid', start_color='FFFFFF', end_color='FFFFFF'))
-    style.set_style_in_range(sheet, f'Q3:R{total_row + 3}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))
+    style.set_style_in_range(sheet, f'Q3:Q{total_row + 3}', fill=PatternFill(fill_type='solid', start_color='D8E4BC', end_color='D8E4BC'), format='0.0000')
+    style.set_style_in_range(sheet, f'R3:S{total_row + 3}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))
     style.set_style_in_range(sheet, f'J3:J{total_row + 3}', format='0.00')
+    style.set_style_in_range(sheet, f'B3:D3', font=Font(color="0000FF", size=9, bold=True), alignment=Alignment(horizontal='left', vertical='center', wrap_text=True))
 
 def extract_parent_and_counts(data):
     """
@@ -146,6 +148,21 @@ def get_labels_and_numbers(sheet):
     values = get_column_content(sheet)
     return extract_parent_and_counts(values)
 
+def get_main_name(sheet):
+    """
+    Get the main name from the first non-empty cell in column A.
+
+    Args:
+        sheet (Worksheet): The target worksheet.
+
+    Returns:
+        str: The main name.
+    """
+    for row in sheet.iter_rows(min_row=5, max_row=sheet.max_row, min_col=2, max_col=2):
+        cell = row[0]
+        if cell.value is not None:
+            return cell.value
+    return ''
 
 def fill_query_no(sheet, labels, label_nums):
     """
@@ -256,8 +273,8 @@ def calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_
         if None in values:
             for j in range(4):
                 output_sheet.cell(row=output_i, column=output_col + j, value="")
-            cell1 = output_sheet.cell(row=output_i, column=output_col + 6, value=f'=P{output_i}+O{output_i}+N{output_i}+M{output_i}')
-            cell2 = output_sheet.cell(row=output_i, column=output_col + 7, value=f'=Q{output_i}*J{output_i}')
+            cell1 = output_sheet.cell(row=output_i, column=output_col + 7, value=f'=P{output_i}+O{output_i}+N{output_i}+M{output_i}+Q{output_i}')
+            cell2 = output_sheet.cell(row=output_i, column=output_col + 8, value=f'=R{output_i}*J{output_i}')
             cell1.number_format = '0.00'
             cell2.number_format = '0.00'
             continue
@@ -291,22 +308,22 @@ def calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_
             print(error_message)
             raise Exception(error_message)
         
-        cell1 = output_sheet.cell(row=output_i, column=output_col + 6, value=f'=P{output_i}+O{output_i}+N{output_i}+M{output_i}')
-        cell2 = output_sheet.cell(row=output_i, column=output_col + 7, value=f'=Q{output_i}*J{output_i}')
+        cell1 = output_sheet.cell(row=output_i, column=output_col + 7, value=f'=P{output_i}+O{output_i}+N{output_i}+M{output_i}+Q{output_i}')
+        cell2 = output_sheet.cell(row=output_i, column=output_col + 8, value=f'=R{output_i}*J{output_i}')
         cell1.number_format = '0.00'
         cell2.number_format = '0.00'
 
 def total_result(sheet, total_row):
     output_col = 17
-    sheet.merge_cells(f'P{total_row + 4}:Q{total_row + 4}')
-    sheet.merge_cells(f'P{total_row + 5}:Q{total_row + 5}')
+    sheet.merge_cells(f'P{total_row + 4}:R{total_row + 4}')
+    sheet.merge_cells(f'P{total_row + 5}:R{total_row + 5}')
     cell_1 = sheet[f'P{total_row + 4}']
     cell_2 = sheet[f'P{total_row + 5}']
     cell_1.value = '合計'
     cell_2.value = '含其它製程費用'
-    style.set_style_in_range(sheet, f'P{total_row + 4}:Q{total_row + 5}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))
-    cell1 = sheet.cell(row=total_row + 4, column=output_col + 1, value=f'=SUM(R4:R{total_row + 3})')
-    cell2 = sheet.cell(row=total_row + 5, column=output_col + 1, value=f'=R{total_row + 4}*1.05*1.3')
+    style.set_style_in_range(sheet, f'P{total_row + 4}:R{total_row + 5}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))
+    cell1 = sheet.cell(row=total_row + 4, column=output_col + 2, value=f'=SUM(S4:S{total_row + 3})')
+    cell2 = sheet.cell(row=total_row + 5, column=output_col + 2, value=f'=S{total_row + 4}*1.05*1.3')
     cell1.number_format = '0.00'
     cell2.number_format = '0.00'
-    style.set_style_in_range(sheet, f'Q{total_row + 4}:R{total_row + 5}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))
+    style.set_style_in_range(sheet, f'R{total_row + 4}:S{total_row + 5}', fill=PatternFill(fill_type='solid', start_color='F4B084', end_color='F4B084'))

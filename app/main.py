@@ -21,7 +21,6 @@ def main(input_path, output_path):
 
     new_wb = Workbook()
     output_sheet = new_wb.active
-    output_sheet.title = '成本計算'
     excel.write_excel_header(output_sheet)
     excel.set_column_widths(output_sheet)
     total_row = style.copy_columns_with_style(
@@ -32,12 +31,23 @@ def main(input_path, output_path):
         dest_start_row=3,
         dest_start_col=3
     )
+    style.copy_columns_with_style(
+        ws_src=base_sheet,
+        ws_dest=output_sheet,
+        src_cols='I:I',
+        src_start_row=5,
+        dest_start_row=3,
+        dest_start_col=17
+    )
     labels, label_nums = excel.get_labels_and_numbers(base_sheet)
+    label_name = excel.get_main_name(base_sheet)
     excel.fill_query_no(output_sheet, labels, label_nums)
     excel.set_basic_styles(output_sheet, total_row)
 
     excel.calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_sheet, mm_sheet, total_row, 6, 4)
     excel.total_result(output_sheet, total_row)
+
+    output_sheet.title = f'{labels[0]}{label_name} (成本計算)'
     new_wb.save(output_path)
 
 if __name__ == "__main__":
