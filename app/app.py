@@ -5,6 +5,8 @@ import main
 import os
 import threading
 import sys
+import openpyxl
+import excel
 
 if sys.platform == 'win32':
     from pathlib import Path
@@ -21,7 +23,7 @@ class ExcelApp:
 
         self.input_path = tb.StringVar()
         self.output_dir = tb.StringVar(value=DOWNLOADS)
-        self.output_file = 'ERP成本計算結果.xlsx'
+        self.output_file = tb.StringVar(value='ERP成本計算結果.xlsx')
         self.status_text = tb.StringVar(value='')
 
         tb.Label(root, text='選擇輸入 Excel 檔案：').pack(pady=(18, 0), anchor='w', padx=30)
@@ -35,7 +37,11 @@ class ExcelApp:
         output_frame.pack(pady=5, padx=30, fill=X)
         tb.Entry(output_frame, textvariable=self.output_dir).pack(side=LEFT, fill=X, expand=True)
         tb.Button(output_frame, text='瀏覽', bootstyle=SECONDARY, command=self.browse_output_dir).pack(side=LEFT, padx=5)
-        tb.Label(root, text=f'輸出檔案名稱：{self.output_file}').pack(pady=(5, 0), anchor='w', padx=30)
+        
+        self.output_file_label = tb.Label(root, text='輸出檔案名稱：')
+        self.output_file_label.pack(pady=(5, 0), anchor='w', padx=30)
+        self.output_file_entry = tb.Entry(root, textvariable=self.output_file, state='readonly')
+        self.output_file_entry.pack(pady=(2, 0), padx=30, fill=X)
 
         self.progress = tb.Progressbar(root, mode='indeterminate', length=320, bootstyle=INFO)
 
@@ -52,6 +58,26 @@ class ExcelApp:
         )
         if file_path:
             self.input_path.set(file_path)
+            self.generate_output_filename(file_path)
+
+    def generate_output_filename(self, input_file_path):
+        try:
+            wb = openpyxl.load_workbook(input_file_path)
+            base_sheet = wb['標準成本結構表']
+            
+            labels, label_nums = excel.get_labels_and_numbers(base_sheet)
+            label_name = excel.get_main_name(base_sheet)
+            
+            if labels and label_name:
+                output_filename = f'{labels[0]}{label_name}.xlsx'
+            else:
+                output_filename = 'ERP成本計算結果.xlsx'
+            
+            self.output_file.set(output_filename)
+            
+        except Exception as e:
+            self.output_file.set('ERP成本計算結果.xlsx')
+            print(f"讀取檔案失敗，使用預設檔案名稱: {e}")
 
     def browse_output_dir(self):
         dir_path = filedialog.askdirectory(
@@ -68,7 +94,7 @@ class ExcelApp:
     def run_process(self):
         input_file = self.input_path.get()
         output_dir = self.output_dir.get()
-        output_file = os.path.join(output_dir, self.output_file)
+        output_file = os.path.join(output_dir, self.output_file.get())
         if not input_file or not os.path.isfile(input_file):
             messagebox.showerror('錯誤', '請選擇正確的輸入 Excel 檔案！')
             return

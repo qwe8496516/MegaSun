@@ -47,7 +47,7 @@ def main(input_path, output_path):
     excel.calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_sheet, mm_sheet, total_row, 6, 4)
     excel.total_result(output_sheet, total_row)
 
-    output_sheet.title = f'{labels[0]}{label_name} (成本計算)'
+    output_sheet.title = f'{labels[0]}{label_name[0:5]} (成本計算)'
     new_wb.save(output_path)
 
 if __name__ == "__main__":

@@ -62,7 +62,7 @@ def set_column_widths(sheet):
     :param sheet: openpyxl worksheet
     :param width_map: dict, e.g., {'K': 15, 'L': 12, 'M': 10, 'N': 14}
     """
-    width_map = {'C': 12, 'D': 40, 'E': 20}
+    width_map = {'A': 14,'C': 12, 'D': 40, 'E': 20}
     for col, width in width_map.items():
         sheet.column_dimensions[col].width = width
 
@@ -219,7 +219,7 @@ def find_row_with_multiple_conditions(sheet, conditions, return_cols=None, start
                 return [row[col - 1].value for col in return_cols]
             else:
                 return [cell.value for cell in row]  # return full row values
-    return None
+    raise Exception("找不到鐵板材料費單價")
 
 
 def find_value_by_match(sheet, match_col, match_value, return_col, start_row=2):
@@ -236,15 +236,28 @@ def find_value_by_match(sheet, match_col, match_value, return_col, start_row=2):
     for row in sheet.iter_rows(min_row=start_row):
         if row[match_col - 1].value == match_value:
             return row[return_col - 1].value
-    return None
+    raise Exception("找不到鐵板重量係數")
+
 
 def parse_thickness(thickness_str):
     if thickness_str is None:
         return None
+
+    if not isinstance(thickness_str, str):
+        raise TypeError(f"請將鐵板米數計算-厚度: {thickness_str} 更改為格式如 '5T' 的字串")
+
+    thickness_str = thickness_str.strip()
+
+    match_range = re.match(r".*-(\d+(?:\.\d+)?)T", thickness_str)
+    if match_range:
+        thickness_str = f"{match_range.group(1)}T"
+
     match = re.match(r"([\d\.]+)", thickness_str)
     if match:
         return float(match.group(1))
+
     return None
+
 
 def find_value_by_thickness(sheet, material, input_thickness):
     candidates = []
@@ -257,8 +270,7 @@ def find_value_by_thickness(sheet, material, input_thickness):
             if cell_thickness >= input_thickness:
                 candidates.append((cell_thickness, row[5].value))
     if not candidates:
-        return None
-
+        raise Exception("找不到鐵板米數厚度相關資料")
     candidates.sort(key=lambda x: x[0])
     return candidates[0][1]
 
@@ -270,7 +282,7 @@ def calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_
         values = get_row_range_values(base_sheet, i, 4, 7)
         output_i = output_row + (i - base_row)
 
-        if None in values:
+        if None in values or '' in values:
             for j in range(4):
                 output_sheet.cell(row=output_i, column=output_col + j, value="")
             cell1 = output_sheet.cell(row=output_i, column=output_col + 7, value=f'=P{output_i}+O{output_i}+N{output_i}+M{output_i}+Q{output_i}')
@@ -282,11 +294,14 @@ def calculate_and_write_output(base_sheet, output_sheet, weight_sheet, material_
         try:
             # resolve the type 'str'
             for idx in range(1, 4):
-                if isinstance(values[idx], str):
-                    if '.' in values[idx]:
-                        values[idx] = float(values[idx])
+                try:
+                    val_str = str(values[idx]).strip()
+                    if '.' in val_str:
+                        values[idx] = float(val_str)
                     else:
-                        values[idx] = int(values[idx])
+                        values[idx] = int(val_str)
+                except Exception:
+                    raise ValueError(f"轉換數值失敗：values[{idx}] = {values[idx]}")
 
             coefficient = float(find_value_by_match(weight_sheet, 2, values[0], 6))
             weight = values[1] * values[2] * values[3] * coefficient
